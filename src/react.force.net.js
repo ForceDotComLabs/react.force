@@ -45,7 +45,7 @@ var getApiVersion = function() {
     return apiVersion;
 }
 
-/** 
+/**
  * Send arbitray force.com request
  */
 var sendRequest = function(endPoint, path, successCB, errorCB, method, payload, headerParams) {
@@ -258,6 +258,71 @@ var relevantItems = function(objtypes, callback, error) {
 };
 
 /**
+ * Executes getting a list of most recent dashboards
+ * @param  {function}   callback  function to which response will be passed
+ * @param  {?function}  error     function to which error response will be passed
+ */
+var dashboardList = function(callback, error){
+  return sendRequest('/services/data', '/' + apiVersion + '/analytics/dashboards', callback, error);
+};
+
+/**
+ * Executes getting data of dashboard passed in
+ * @param  {string}   dbId     Dashboard id to query for
+ * @param  {function} callback  function which response will be passed
+ * @param  {?function} error    function which error response will be passed to
+ */
+var dashboardData = function(dbId, callback, error){
+  return sendRequest('/services/data', '/' + apiVersion + '/analytics/dashboards/' + dbId, callback, error);
+}
+
+/**
+ * Executes getting status of dashboard passed
+ * @param  {string}   dbId     Dashboard id to query for
+ * @param  {function} callback  function which response will be passed
+ * @param  {?function} error    function which error response will be passed to
+ */
+var dashboardStatus = function(dbId, callback, error){
+  return sendRequest('/services/data', '/' + apiVersion + '/analytics/dashboards/' + dbId + '/status', callback, error);
+}
+
+/**
+ * Executes refreshing of dashboard
+ * @param  {string}   dbId     Dashboard id to query for
+ * @param  {function} callback  function which response will be passed
+ * @param  {?function} error    function which error response will be passed to
+ */
+var dashboardRefresh = function(dbId, callback, error){
+  return sendRequest('/services/data', '/' + apiVersion + '/analytics/dashboards/' + dbId + '/status', callback, error, 'PUT');
+}
+
+/**
+ * Get user info from chatter
+ * @param  {string}   userId   User id to get info for
+ * @param  {function} callback function which response will be passed to
+ * @param  {?function}   error    function which error response will be passed
+ */
+var chatterUserInfo = function(userId, callback, error){
+  return sendRequest('/services/data/', '/' + apiVersion + '/connect/user-profiles/' + userId, callback, error);
+}
+
+/**
+ * Get user picture info from chatter for multiple users
+ * @param  {array}   userIds  all user id's requesting profile pics
+ * @param  {function} callback function which response will be passed to
+ * @param  {?function}   error    funciton which error response will be passed to
+ */
+var bulkChatterUserPics = function(userIds, callback, error){
+  let batchRequestBody = {'batchRequests': []};
+  const batchRequests  = userIds.map(function(userId){
+    return {"method" : "Get","url" : "/" + apiVersion + "/connect/user-profiles/" + userId + "/photo"};
+  });
+  batchRequestBody.batchRequests = batchRequests;
+
+  return sendRequest('/services/data/', '/' + apiVersion + '/connect/batch', callback, error, 'POST', batchRequestBody);
+}
+
+/**
  * Part of the module that is public
  */
 module.exports = {
@@ -280,5 +345,11 @@ module.exports = {
     search: search,
     compactLayout: compactLayout,
     defaultLayout: defaultLayout,
-    relevantItems:relevantItems
+    relevantItems:relevantItems,
+    dashboardList: dashboardList,
+    dashboardData: dashboardData,
+    dashboardStatus: dashboardStatus,
+    dashboardRefresh: dashboardRefresh,
+    chatterUserInfo: chatterUserInfo,
+    bulkChatterUserPics: bulkChatterUserPics
 };
