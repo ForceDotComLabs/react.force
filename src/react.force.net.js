@@ -307,7 +307,7 @@ var chatterUserInfo = function(userId, callback, error){
 }
 
 /**
- * Get user picture info from chatter for multiple users
+ * Get user picture info from chatter for multiple users. There is a limit of 25 requests.
  * @param  {array}   userIds  all user id's requesting profile pics
  * @param  {function} callback function which response will be passed to
  * @param  {?function}   error    funciton which error response will be passed to
