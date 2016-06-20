@@ -323,6 +323,16 @@ var bulkChatterUserPics = function(userIds, callback, error){
 }
 
 /**
+ * Get report data from report id
+ * @param  {string}   reportId Report id used to query
+ * @param  {function} callback function which response will be passed to
+ * @param  {?function}   error    function which error response will be passed to
+ */
+var reportData = function(reportId, callback, error){
+  return sendRequest('/services/data/', '/' + apiVersion + '/analytics/reports/' + reportId + '?includeDetails=true', callback, error);
+}
+
+/**
  * Part of the module that is public
  */
 module.exports = {
@@ -351,5 +361,6 @@ module.exports = {
     dashboardStatus: dashboardStatus,
     dashboardRefresh: dashboardRefresh,
     chatterUserInfo: chatterUserInfo,
-    bulkChatterUserPics: bulkChatterUserPics
+    bulkChatterUserPics: bulkChatterUserPics,
+    reportData: reportData
 };
