@@ -46,7 +46,7 @@ var getApiVersion = function() {
 }
 
 /**
- * Send arbitray force.com request
+ * Send arbitrary force.com request
  */
 var sendRequest = function(endPoint, path, successCB, errorCB, method, payload, headerParams) {
     method = method || "GET";
