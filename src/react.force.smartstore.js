@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, salesforce.com, inc.
+ * Copyright (c) 2015, salesforce.com, inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided
@@ -31,6 +31,14 @@ var forceCommon = require('./react.force.common.js');
 
 var exec = function(successCB, errorCB, methodName, args) {
     forceCommon.exec("SFSmartStoreReactBridge", "SmartStoreReactBridge", SFSmartStoreReactBridge, SmartStoreReactBridge, successCB, errorCB, methodName, args);
+};
+
+/**
+ * SoupSpec consturctor
+ */
+var SoupSpec = function (soupName, features) {
+    this.name = soupName;
+    this.features = features;
 };
 
 /**
@@ -75,6 +83,9 @@ var QuerySpec = function (path) {
 
     //the number of entries to copy from native to javascript per each cursor page
     this.pageSize = 10;
+
+    //selectPaths - null means return soup elements
+    this.selectPaths = null;
 };
 
 /**
@@ -98,27 +109,29 @@ var StoreCursor = function () {
 // ====== querySpec factory methods
 // Returns a query spec that will page through all soup entries in order by the given path value
 // Internally it simply does a range query with null begin and end keys
-var buildAllQuerySpec = function (path, order, pageSize) {
+var buildAllQuerySpec = function (path, order, pageSize, selectPaths) {
     var inst = new QuerySpec(path);
     inst.queryType = "range";
     inst.orderPath = path;
     if (order) { inst.order = order; } // override default only if a value was specified
     if (pageSize) { inst.pageSize = pageSize; } // override default only if a value was specified
+    if (selectPaths) { inst.selectPaths = selectPaths; }
     return inst;
 };
 
 // Returns a query spec that will page all entries exactly matching the matchKey value for path
-var buildExactQuerySpec = function (path, matchKey, pageSize, order, orderPath) {
+var buildExactQuerySpec = function (path, matchKey, pageSize, order, orderPath, selectPaths) {
     var inst = new QuerySpec(path);
     inst.matchKey = matchKey;
     if (pageSize) { inst.pageSize = pageSize; } // override default only if a value was specified
     if (order) { inst.order = order; } // override default only if a value was specified
     inst.orderPath = orderPath ? orderPath : path;
+    if (selectPaths) { inst.selectPaths = selectPaths; }
     return inst;
 };
 
 // Returns a query spec that will page all entries in the range beginKey ...endKey for path
-var buildRangeQuerySpec = function (path, beginKey, endKey, order, pageSize, orderPath) {
+var buildRangeQuerySpec = function (path, beginKey, endKey, order, pageSize, orderPath, selectPaths) {
     var inst = new QuerySpec(path);
     inst.queryType = "range";
     inst.beginKey = beginKey;
@@ -126,23 +139,25 @@ var buildRangeQuerySpec = function (path, beginKey, endKey, order, pageSize, ord
     if (order) { inst.order = order; } // override default only if a value was specified
     if (pageSize) { inst.pageSize = pageSize; } // override default only if a value was specified
     inst.orderPath = orderPath ? orderPath : path;
+    if (selectPaths) { inst.selectPaths = selectPaths; }
     return inst;
 };
 
 // Returns a query spec that will page all entries matching the given likeKey value for path
-var buildLikeQuerySpec = function (path, likeKey, order, pageSize, orderPath) {
+var buildLikeQuerySpec = function (path, likeKey, order, pageSize, orderPath, selectPaths) {
     var inst = new QuerySpec(path);
     inst.queryType = "like";
     inst.likeKey = likeKey;
     if (order) { inst.order = order; } // override default only if a value was specified
     if (pageSize) { inst.pageSize = pageSize; } // override default only if a value was specified
     inst.orderPath = orderPath ? orderPath : path;
+    if (selectPaths) { inst.selectPaths = selectPaths; }
     return inst;
 };
 
 // Returns a query spec that will page all entries matching the given full-text search matchKey value for path
 // Pass null for path to match matchKey across all full-text indexed fields
-var buildMatchQuerySpec = function (path, matchKey, order, pageSize, orderPath) {
+var buildMatchQuerySpec = function (path, matchKey, order, pageSize, orderPath, selectPaths) {
     var inst = new QuerySpec(path);
     inst.queryType = "match";
     inst.matchKey = matchKey;
@@ -150,6 +165,7 @@ var buildMatchQuerySpec = function (path, matchKey, order, pageSize, orderPath) 
     if (order) { inst.order = order; } // override default only if a value was specified
     if (pageSize) { inst.pageSize = pageSize; } // override default only if a value was specified
     inst.orderPath = orderPath ? orderPath : path;
+    if (selectPaths) { inst.selectPaths = selectPaths; }
     return inst;
 };
 
@@ -171,6 +187,10 @@ var registerSoup = function (isGlobalStore, soupName, indexSpecs, successCB, err
     exec(successCB, errorCB, "registerSoup", {"soupName": soupName, "indexes": indexSpecs, "isGlobalStore": isGlobalStore});
 };
 
+var registerSoupWithSpec = function (isGlobalStore, soupSpec, indexSpecs, successCB, errorCB) {
+    exec(successCB, errorCB, "registerSoup", {"soupSpec": soupSpec, "indexes": indexSpecs, "isGlobalStore": isGlobalStore});
+};
+
 var removeSoup = function (isGlobalStore, soupName, successCB, errorCB) {
     exec(successCB, errorCB, "removeSoup", {"soupName": soupName, "isGlobalStore": isGlobalStore});
 };
@@ -179,8 +199,16 @@ var getSoupIndexSpecs = function(isGlobalStore, soupName, successCB, errorCB) {
     exec(successCB, errorCB, "getSoupIndexSpecs", {"soupName": soupName, "isGlobalStore": isGlobalStore});
 };
 
+var getSoupSpec = function(isGlobalStore, soupName, successCB, errorCB) {
+    exec(successCB, errorCB, "getSoupSpec", {"soupName": soupName, "isGlobalStore": isGlobalStore});
+};
+
 var alterSoup = function (isGlobalStore, soupName, indexSpecs, reIndexData, successCB, errorCB) {
     exec(successCB, errorCB, "alterSoup", {"soupName": soupName, "indexes": indexSpecs, "reIndexData": reIndexData, "isGlobalStore": isGlobalStore});
+};
+
+var alterSoupWithSpec = function (isGlobalStore, soupName, soupSpec, indexSpecs, reIndexData, successCB, errorCB) {
+    exec(successCB, errorCB, "alterSoup", {"soupName": soupName, "soupSpec": soupSpec, "indexes": indexSpecs, "reIndexData": reIndexData, "isGlobalStore": isGlobalStore});
 };
 
 var reIndexSoup = function (isGlobalStore, soupName, paths, successCB, errorCB) {
@@ -223,9 +251,11 @@ var upsertSoupEntriesWithExternalId = function (isGlobalStore, soupName, entries
     exec(successCB, errorCB, "upsertSoupEntries", {"soupName": soupName, "entries": entries, "externalIdPath": externalIdPath, "isGlobalStore": isGlobalStore});
 };
 
-var removeFromSoup = function (isGlobalStore, soupName, entryIds, successCB, errorCB) {
+var removeFromSoup = function (isGlobalStore, soupName, entryIdsOrQuerySpec, successCB, errorCB) {
     isGlobalStore = isGlobalStore || false;
-    exec(successCB, errorCB, "removeFromSoup", {"soupName": soupName, "entryIds": entryIds, "isGlobalStore": isGlobalStore});
+    var execArgs = {"soupName": soupName, "isGlobalStore": isGlobalStore};
+    execArgs[entryIdsOrQuerySpec instanceof Array ? "entryIds":"querySpec"] = entryIdsOrQuerySpec;
+    exec(successCB, errorCB, "removeFromSoup", execArgs);
 };
 
 //====== Cursor manipulation ======
@@ -260,6 +290,7 @@ var closeCursor = function (isGlobalStore, cursor, successCB, errorCB) {
  */
 module.exports = {
     alterSoup: alterSoup,
+    alterSoupWithSpec: alterSoupWithSpec,
     buildAllQuerySpec: buildAllQuerySpec,
     buildExactQuerySpec: buildExactQuerySpec,
     buildLikeQuerySpec: buildLikeQuerySpec,
@@ -270,12 +301,14 @@ module.exports = {
     closeCursor: closeCursor,
     getDatabaseSize: getDatabaseSize,
     getSoupIndexSpecs: getSoupIndexSpecs,
+    getSoupSpec: getSoupSpec,
     moveCursorToNextPage: moveCursorToNextPage,
     moveCursorToPageIndex: moveCursorToPageIndex,
     moveCursorToPreviousPage: moveCursorToPreviousPage,
     querySoup: querySoup,
     reIndexSoup: reIndexSoup,
     registerSoup: registerSoup,
+    registerSoupWithSpec: registerSoupWithSpec,
     removeFromSoup: removeFromSoup,
     removeSoup: removeSoup,
     retrieveSoupEntries: retrieveSoupEntries,
@@ -286,6 +319,7 @@ module.exports = {
     upsertSoupEntriesWithExternalId: upsertSoupEntriesWithExternalId,
 
     // Constructors
+    SoupSpec: SoupSpec,
     QuerySpec: QuerySpec,
     SoupIndexSpec: SoupIndexSpec,
     StoreCursor: StoreCursor
