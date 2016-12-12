@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-present, salesforce.com, inc.
+ * Copyright (c) 2016, salesforce.com, inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided
@@ -33,6 +33,7 @@ var exec = function(successCB, errorCB, methodName, args) {
     forceCommon.exec("SFSmartSyncReactBridge", "SmartSyncReactBridge", SFSmartSyncReactBridge, SmartSyncReactBridge, successCB, errorCB, methodName, args);
 };
 
+
 var syncDown = function(isGlobalStore, target, soupName, options, successCB, errorCB) {
     exec(successCB, errorCB, "syncDown", {"target": target, "soupName": soupName, "options": options, "isGlobalStore":isGlobalStore});        
 };
@@ -41,9 +42,6 @@ var reSync = function(isGlobalStore, syncId, successCB, errorCB) {
     exec(successCB, errorCB, "reSync", {"syncId": syncId, "isGlobalStore":isGlobalStore});        
 };
 
-var cleanResyncGhosts = function(isGlobalStore, syncId, successCB, errorCB) {
-    exec(successCB, errorCB, "cleanResyncGhosts", {"syncId": syncId, "isGlobalStore":isGlobalStore});        
-};
 
 var syncUp = function(isGlobalStore, target, soupName, options, successCB, errorCB) {
     exec(successCB, errorCB, "syncUp", {"target": target, "soupName": soupName, "options": options, "isGlobalStore":isGlobalStore});        
@@ -58,14 +56,14 @@ var MERGE_MODE = {
     LEAVE_IF_CHANGED: "LEAVE_IF_CHANGED"
 };
 
+
 /**
- * Part of the module that is public.
+ * Part of the module that is public
  */
 module.exports = {
     MERGE_MODE: MERGE_MODE,
     syncDown: syncDown,
     syncUp: syncUp,
     getSyncStatus: getSyncStatus,
-    reSync: reSync,
-    cleanResyncGhosts: cleanResyncGhosts
+    reSync: reSync
 };
