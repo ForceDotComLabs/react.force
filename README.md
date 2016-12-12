@@ -1,3 +1,7 @@
+# {DEPRECATED}
+
+react.force libraries now live here: https://github.com/forcedotcom/SalesforceMobileSDK-ReactNative
+
 # react.force
 
 ### Attention: This is an experimental project published under ForceDotComLabs: 
